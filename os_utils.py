@@ -1,4 +1,5 @@
 import platform
+import subprocess
 
 
 def get_linux_name():
@@ -55,3 +56,34 @@ def path_by_os(
         return linux
     else:
         raise NotImplementedError(f"Unsupported OS: {os_name}")
+
+
+def run_shell_command(command, cwd=None, capture_output=True, check=True, shell=False):
+    """
+    Execute a shell command and return the result.
+
+    Parameters:
+    - command: list or str. The shell command to execute (e.g., ["ls", "-l"] or "ls -l").
+    - cwd: str. The working directory in which to run the command.
+    - capture_output: bool. Whether to capture stdout and stderr.
+    - check: bool. Whether to raise an exception if the command fails.
+    - shell: bool. Whether to execute the command through the shell (e.g., `bash -c`).
+
+    Returns:
+    - A CompletedProcess object containing stdout, stderr, and the return code.
+    """
+    try:
+        result = subprocess.run(
+            command,
+            cwd=cwd,
+            capture_output=capture_output,
+            text=True,
+            check=check,
+            shell=shell,
+        )
+        return result
+    except subprocess.CalledProcessError as e:
+        print(f"[ERROR] : {e}")
+        print(f"stdout: {e.stdout}")
+        print(f"stderr: {e.stderr}")
+        raise

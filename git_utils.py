@@ -51,3 +51,31 @@ def clone_repo(
         subprocess.run(cmd, check=True)
     except subprocess.CalledProcessError as e:
         raise RuntimeError(f"Git clone failed: {e}")
+
+
+def pull_repo(repo_path: str):
+    """
+    Pull the latest changes in the specified Git repository.
+
+    Parameters:
+    - repo_path: str. Path to the local Git repository.
+
+    Raises:
+    - RuntimeError if the pull operation fails.
+    """
+    repo_path = Path(repo_path).expanduser().resolve()
+    if not (repo_path / ".git").exists():
+        raise RuntimeError(f"'{repo_path}' is not a valid Git repository.")
+
+    try:
+        print(f"[INFO] Pulling in '{repo_path}'...")
+        subprocess.run(
+            ["git", "-C", str(repo_path), "pull"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        print("[SUCCESS] Pull completed.")
+    except subprocess.CalledProcessError as e:
+        print(f"[ERROR] {e.stderr.strip()}")
+        raise RuntimeError("Git pull failed") from e

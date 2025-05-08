@@ -5,6 +5,9 @@ from .ln import e9ln
 from .os_utils import path_by_os, get_linux_name, get_os_name
 from .git_utils import update_ln39
 
+# TODO:
+# if_git_repo
+
 
 def ln(dotfiles: list[File39]):
     e9ln(dotfiles)

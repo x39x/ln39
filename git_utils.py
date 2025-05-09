@@ -4,6 +4,17 @@ from pathlib import Path
 from .file_utils import backup
 
 
+def init_ln39():
+    try:
+        subprocess.run(
+            ["git", "submodule", "update", "--init", "--recursive"],
+            check=True,
+        )
+        print("[SUBMODULE] All submodules init")
+    except subprocess.CalledProcessError as e:
+        print(f"[ERROR] Failed to init submodules: {e}")
+
+
 def update_ln39():
     """
     Update all git submodules to their latest remote commits.

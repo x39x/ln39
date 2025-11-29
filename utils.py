@@ -1,29 +1,69 @@
+from types import SimpleNamespace
+
 from .env_utils import env_equals, env_exists, get_env
-from .file39 import File39
-from .file_utils import backup, check_parent_dir
-from .git_utils import clone_repo, init_ln39, pull_repo, update_ln39
-from .ln import e9ln
-from .os_utils import get_linux_name, get_os_name, path_by_os
+from .file_utils import backup
+from .git_utils import clone_repo, pull_repo, update_ln39, init_submodules
 
-# TODO:
-# if_git_repo
+from .M import M
+from .os_utils import get_os_name, path_for
 
 
-def ln(dotfiles: list[File39]):
-    e9ln(dotfiles)
+def _lnM(dotfiles: list[M]):
+    for dotfile in dotfiles:
+        if not dotfile.enabled:
+            continue
+        # 检查
+        if not dotfile.preflight():
+            print()
+            continue
+
+        opts = SimpleNamespace(
+            src=dotfile.source,
+            dest=dotfile.destination,
+            basedir=dotfile.basedir,
+        )
+
+        # ln 前函数
+        if callable(dotfile.before_ln):
+            try:
+                dotfile.before_ln(opts)
+            except Exception as e:
+                print("before_ln failed:", e)
+
+        dotfile.ln()
+
+        # ln 后函数
+        if callable(dotfile.after_ln):
+            try:
+                dotfile.after_ln(opts)
+            except Exception as e:
+                print("after_ln failed:", e)
+
+        print()
+
+
+init = False
+
+
+def ln(dotfiles: list[M]):
+    global init
+    if dotfiles:
+        if not init:
+            basedir = dotfiles[0].basedir
+            init_submodules(basedir)
+            init = True
+
+    _lnM(dotfiles)
 
 
 __all__ = [
-    "path_by_os",
+    "path_for",
     "get_os_name",
     "get_env",
     "env_equals",
     "env_exists",
-    "get_linux_name",
     "backup",
-    "check_parent_dir",
     "update_ln39",
-    "init_ln39",
     "clone_repo",
     "pull_repo",
 ]

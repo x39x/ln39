@@ -1,18 +1,55 @@
-import subprocess
 import os
+import subprocess
 from pathlib import Path
+
+from ._cprint import printg, printr
 from .file_utils import backup
 
+# TODO:
+# if_git_repo
+# error log
 
-def init_ln39():
-    try:
-        subprocess.run(
-            ["git", "submodule", "update", "--init", "--recursive"],
-            check=True,
+
+def init_submodules(repo_path: Path):
+    repo = repo_path.Path.resolve()
+
+    if not (repo / ".git").exists():
+        raise ValueError(f"{repo} is not a git repository")
+
+    def run_git(args):
+        return subprocess.run(
+            ["git"] + args,
+            cwd=str(repo),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
         )
-        print("[SUBMODULE] All submodules init")
-    except subprocess.CalledProcessError as e:
-        print(f"[ERROR] Failed to init submodules: {e}")
+
+    # 检查 submodule 状态
+    status = run_git(["submodule", "status", "--recursive"])
+    if status.returncode != 0:
+        print()
+        printr(f"No submodules or failed to check: {status.stderr.strip()}", "WARN")
+        return
+
+    # 判断是否有未初始化/未同步的 submodule
+    needs_init = any(
+        line.strip().startswith(("-", "+")) for line in status.stdout.splitlines()
+    )
+
+    if not needs_init:
+        printg(f"Already initialized for {repo}", "SUBMODULE")
+        return
+
+    # 2. 执行初始化
+    printg(f"Initializing submodules for {repo}", "SUBMODULE")
+
+    result = run_git(["submodule", "update", "--init", "--recursive"])
+    if result.returncode == 0:
+        printg(f"Submodules initialized for {repo}", "SUBMODULE")
+    else:
+        printr(f"Failed to init submodules for {repo}", "ERROR")
+        print(result.stderr)
 
 
 def update_ln39():
@@ -27,9 +64,9 @@ def update_ln39():
         subprocess.run(
             ["git", "submodule", "update", "--remote", "--merge"], check=True
         )
-        print("[SUBMODULE] All submodules updated to latest remote.")
+        printg("All submodules updated to latest remote.", "SUBMODULE")
     except subprocess.CalledProcessError as e:
-        print(f"[ERROR] Failed to update submodules: {e}")
+        printr(f"Failed to update submodules: {e}", "ERROR")
 
 
 def clone_repo(

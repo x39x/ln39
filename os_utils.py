@@ -2,26 +2,6 @@ import platform
 import subprocess
 
 
-def get_linux_name():
-    """
-    Retrieve basic Linux distribution information from /etc/os-release.
-
-    Returns:
-        tuple[str | None, str | None]: A tuple (ID, PRETTY_NAME), or (None, None) if file is missing.
-    """
-    try:
-        with open("/etc/os-release", "r") as f:
-            lines = f.readlines()
-        info = {}
-        for line in lines:
-            if "=" in line:
-                key, value = line.strip().split("=", 1)
-                info[key] = value.strip('"')
-        return info.get("ID"), info.get("PRETTY_NAME")
-    except FileNotFoundError:
-        return None, None
-
-
 def get_os_name():
     """
     Return the base operating system name as detected by Python's platform module.
@@ -32,7 +12,8 @@ def get_os_name():
     return platform.system()
 
 
-def path_by_os(
+# TODO: win bsd
+def path_for(
     linux: str,
     macos: str,
 ) -> str:
@@ -83,7 +64,7 @@ def run_shell_command(command, cwd=None, capture_output=True, check=True, shell=
         )
         return result
     except subprocess.CalledProcessError as e:
-        print(f"[ERROR] : {e}")
-        print(f"stdout: {e.stdout}")
-        print(f"stderr: {e.stderr}")
+        print(f"""[ERROR] : {e}
+stdout: {e.stdout}")
+stderr: {e.stderr}""")
         raise

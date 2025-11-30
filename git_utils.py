@@ -2,7 +2,7 @@ import subprocess
 from os.path import expandvars
 from pathlib import Path
 
-from ._cprint import printg, printr
+from ._cprint import printg, printr, printy
 from .file_utils import backup
 
 
@@ -34,7 +34,7 @@ def init_submodules(repo_path: Path | str):
     status = run_git(["submodule", "status", "--recursive"])
     if status.returncode != 0:
         print()
-        printr(f"No submodules or failed to check: {status.stderr.strip()}", "WARN")
+        printr(f"No submodules or failed to check: {status.stderr.strip()}", "ERROR")
         return
 
     # 判断是否有未初始化/未同步的 submodule
@@ -53,7 +53,7 @@ def init_submodules(repo_path: Path | str):
         printg(f"Submodules initialized for {repo}", "SUBMODULE")
     else:
         printr(f"Failed to init submodules for {repo}", "ERROR")
-        print(result.stderr)
+        printr(result.stderr)
 
 
 def update_ln39():
@@ -74,8 +74,8 @@ def update_ln39():
 
 
 def clone_repo(
-    repo_url: Path | str,
-    target_dir: str,
+    repo_url: str,
+    target_dir: Path | str,
     depth: int = 1,
 ):
     """
@@ -92,14 +92,14 @@ def clone_repo(
     target = Path(expandvars(str(target_dir))).expanduser().resolve()
 
     if target.exists():
-        print(f"[WARN] Backup existing directory: {target}")
+        printy(f"Backup existing directory: {target}", "BACKUP")
         backup(target)
 
     target.parent.mkdir(parents=True, exist_ok=True)
 
     cmd = ["git", "clone", "--depth", str(depth), repo_url, str(target)]
     try:
-        print(f"[CLONE] Cloning {repo_url} --> {target}")
+        printg(f"Cloning {repo_url} --> {target}", "CLONE")
         subprocess.run(cmd, check=True)
     except subprocess.CalledProcessError as e:
         raise RuntimeError(f"Git clone failed: {e}")
@@ -120,14 +120,14 @@ def pull_repo(repo_path: Path | str):
         raise RuntimeError(f"'{repo_path}' is not a valid Git repository.")
 
     try:
-        print(f"[INFO] Pulling in '{repo_path}'...")
+        printg(f"Pulling in '{repo_path}'...", "INFO")
         subprocess.run(
             ["git", "-C", str(repo_path), "pull"],
             check=True,
             capture_output=True,
             text=True,
         )
-        print("[SUCCESS] Pull completed.")
+        printg("Pull completed.", "SUCCESS")
     except subprocess.CalledProcessError as e:
-        print(f"[ERROR] {e.stderr.strip()}")
+        printr(f"{e.stderr.strip()}", "ERROR")
         raise RuntimeError("Git pull failed") from e

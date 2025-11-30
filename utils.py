@@ -2,10 +2,9 @@ from types import SimpleNamespace
 
 from .env_utils import env_equals, env_exists, get_env
 from .file_utils import backup
-from .git_utils import clone_repo, pull_repo, update_ln39, init_submodules
-
+from .git_utils import clone_repo, init_submodules, pull_repo, update_ln39
 from .M import M
-from .os_utils import get_os_name, path_for
+from .os_utils import get_os_name, path_for, run
 
 
 def _lnM(dotfiles: list[M]):
@@ -57,12 +56,14 @@ def ln(dotfiles: list[M]):
 
 
 __all__ = [
-    "path_for",
-    "get_os_name",
     "get_env",
     "env_equals",
     "env_exists",
+    "get_os_name",
+    "path_for",
+    "run",
     "backup",
+    "init_submodules",
     "update_ln39",
     "clone_repo",
     "pull_repo",

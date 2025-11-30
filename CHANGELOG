@@ -1,6 +1,7 @@
 == TODO
-readme
-run shell cmd
+    readme
+    utils test 
+
 
 == 0.0.1
-为path_for添加Windows BSD支持
+    为path_for添加Windows BSD支持

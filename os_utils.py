@@ -1,6 +1,8 @@
 import platform
 import subprocess
 from typing import Optional
+from os.path import expandvars
+from pathlib import Path
 
 
 def get_os_name():
@@ -59,7 +61,7 @@ def path_for(
         raise NotImplementedError(f"Unsupported OS: {os_name}")
 
 
-def run_shell_command(command, cwd=None, capture_output=True, check=True, shell=False):
+def run(command, cwd=None, capture_output=True, check=True, shell=False):
     """
     Execute a shell command and return the result.
 
@@ -73,6 +75,9 @@ def run_shell_command(command, cwd=None, capture_output=True, check=True, shell=
     Returns:
     - A CompletedProcess object containing stdout, stderr, and the return code.
     """
+    if cwd is not None:
+        cwd = Path(expandvars(cwd)).expanduser().absolute()
+
     try:
         result = subprocess.run(
             command,
@@ -84,7 +89,7 @@ def run_shell_command(command, cwd=None, capture_output=True, check=True, shell=
         )
         return result
     except subprocess.CalledProcessError as e:
-        print(f"""[ERROR] : {e}
-stdout: {e.stdout}")
-stderr: {e.stderr}""")
+        print("[ERROR]:", e)
+        print("stdout:", e.stdout.decode() if isinstance(e.stdout, bytes) else e.stdout)
+        print("stderr:", e.stderr.decode() if isinstance(e.stderr, bytes) else e.stderr)
         raise

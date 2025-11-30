@@ -61,7 +61,7 @@ def update_ln39():
     """
     try:
         subprocess.run(
-            ["git", "submodule", "update", "--remote", "--merge"], check=True
+            ["git", "submodule", "update", "--remote", "--rebase"], check=True
         )
         printg("All submodules updated to latest remote.", "SUBMODULE")
     except subprocess.CalledProcessError as e:

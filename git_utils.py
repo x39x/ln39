@@ -1,17 +1,22 @@
-import os
 import subprocess
+from os.path import expandvars
 from pathlib import Path
 
 from ._cprint import printg, printr
 from .file_utils import backup
 
-# TODO:
-# if_git_repo
-# error log
 
+def init_submodules(repo_path: Path | str):
+    """
+    init a git repository's submodule
 
-def init_submodules(repo_path: Path):
-    repo = repo_path.resolve()
+    Args:
+        repo_path (str or Path): Git repository absolute path
+
+    Raises:
+        TODO
+    """
+    repo = Path(expandvars(str(repo_path))).expanduser().resolve()
 
     if not (repo / ".git").exists():
         raise ValueError(f"{repo} is not a git repository")
@@ -69,7 +74,7 @@ def update_ln39():
 
 
 def clone_repo(
-    repo_url: str,
+    repo_url: Path | str,
     target_dir: str,
     depth: int = 1,
 ):
@@ -84,7 +89,7 @@ def clone_repo(
     Raises:
         RuntimeError: If git command fails.
     """
-    target = Path(os.path.expanduser(target_dir))
+    target = Path(expandvars(str(target_dir))).expanduser().resolve()
 
     if target.exists():
         print(f"[WARN] Backup existing directory: {target}")
@@ -100,7 +105,7 @@ def clone_repo(
         raise RuntimeError(f"Git clone failed: {e}")
 
 
-def pull_repo(repo_path: str):
+def pull_repo(repo_path: Path | str):
     """
     Pull the latest changes in the specified Git repository.
 
@@ -110,7 +115,7 @@ def pull_repo(repo_path: str):
     Raises:
     - RuntimeError if the pull operation fails.
     """
-    repo_path = Path(repo_path).expanduser().resolve()
+    repo_path = Path(expandvars(str(repo_path))).expanduser().resolve()
     if not (repo_path / ".git").exists():
         raise RuntimeError(f"'{repo_path}' is not a valid Git repository.")
 

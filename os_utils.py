@@ -1,5 +1,6 @@
 import platform
 import subprocess
+from typing import Optional
 
 
 def get_os_name():
@@ -12,29 +13,48 @@ def get_os_name():
     return platform.system()
 
 
-# TODO: win bsd
 def path_for(
-    linux: str,
-    macos: str,
+    linux: Optional[str] = None,
+    macos: Optional[str] = None,
+    bsd: Optional[str] = None,
+    windows: Optional[str] = None,
 ) -> str:
     """
-    Return the platform-specific path based on the current OS.
+    Return path for current OS, supporting only Linux, macOS, Windows.
 
     Args:
-        linux (str): The path to use on Linux systems.
-        macos (str): The path to use on macOS systems.
+        linux (Optional[str]): Path for Linux.
+        macos (Optional[str]): Path for macOS (Darwin).
+        bsd (Optional[str]): Path for BSD
+        windows (Optional[str]): Path for Windows.
 
     Returns:
-        str: The appropriate path for the detected operating system.
+        str: The path corresponding to the detected OS.
 
     Raises:
-        NotImplementedError: If the platform is not supported.
+        NotImplementedError: If the OS is supported but corresponding path is missing.
     """
     os_name = get_os_name()
-    if os_name == "Darwin":
-        return macos
-    elif os_name == "Linux":
-        return linux
+
+    if os_name == "Linux":
+        if linux is not None:
+            return linux
+        raise NotImplementedError("Linux detected but no Linux path provided.")
+
+    elif os_name == "Darwin":
+        if macos is not None:
+            return macos
+        raise NotImplementedError("macOS detected but no macOS path provided.")
+
+    elif os_name == "Windows":
+        if windows is not None:
+            return windows
+        raise NotImplementedError("Windows detected but no Windows path provided.")
+    elif os_name in ("FreeBSD", "OpenBSD", "NetBSD", "DragonFly"):
+        if bsd is not None:
+            return bsd
+        raise NotImplementedError("bsd detected but no bsd path provided.")
+
     else:
         raise NotImplementedError(f"Unsupported OS: {os_name}")
 

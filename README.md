@@ -1,22 +1,22 @@
 # ln39
 
-**ln39** 是一个基于 Python 与 Git 的 _零依赖 dotfiles 管理工具_
+**ln39** 是一个基于 Python 与 Git 的dotfiles 管理工具
 
-## ✨ 特性
+## 特性
 
 - **零依赖**
   无需额外安装工具。只需 Python 与 Git（大多数系统已预装）。
 
 - **配置灵活**
-  直接使用 Python 作为配置文件，轻松处理不同系统、不同路径、条件逻辑等场景。
+  直接使用 Python 作为配置文件，轻松处理不同场景
 
 - **跨平台**
   支持 Linux、macOS、Windows、BSD。
 
 - **安全操作**
-  需要移动文件时自动备份到指定目录(~/ln39.bak/)，不会造成文件丢失
+  需要移动文件时自动备份到指定目录(~/ln39.bak/)，不会进行删除操作造成文件丢失
 
-## 📦 安装
+## 安装
 
 在你的 dotfiles 目录中添加子模块：
 
@@ -25,7 +25,7 @@ git submodule add https://github.com/x39x/ln39
 git commit -a -m "add submodule ln39"
 ```
 
-## 🚀 快速上手
+## 快速上手
 
 示例：
 
@@ -77,9 +77,7 @@ python config.py
 
 你的配置将自动链接到系统对应路径。
 
----
-
-## 📁 示例仓库
+## Example
 
 如果你愿意分享自己的 ln39 配置，可以在 issue 或 PR 中添加
 
@@ -87,21 +85,21 @@ python config.py
 
 ## M 对象
 
-`M(source, target)` 用于描述一个映射关系：
+`M(source, dest)` 用于描述一个映射关系：
 
 - `src`: 配置文件在dotfiles 仓库中的路径
 - `dest`: 系统中的实际路径（可用 `~`）
 
-## 🛠️ 工具函数（utils）
+## utils
 
 ln39 提供一组简单但实用的工具函数
 
 ### 环境变量
 
 ```python
-utils.get_env("SHELL")
-utils.env_exists("SHELL")
-utils.env_equals("SHELL", "/bin/zsh")
+utils.get_env("SHELL") # 返回环境变量的值
+utils.env_exists("SHELL") # True
+utils.env_equals("SHELL", "/bin/zsh") # True
 ```
 
 ### 系统名称

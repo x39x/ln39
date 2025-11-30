@@ -6,22 +6,34 @@ from ._cprint import printg, printr, printy
 from .file_utils import backup
 
 
-def init_submodules(repo_path: Path | str):
+def init_submodules(repo_path):
     """
-    init a git repository's submodule
+    Initialize the submodules of a Git repository.
+
+    This function checks whether the target repository contains submodules,
+    determines whether any submodule is uninitialized or out of sync,
+    and performs a recursive initialization if necessary.
 
     Args:
-        repo_path (str or Path): Git repository absolute path
+        repo_path (str | Path):
+            Absolute or user-expanded path to the Git repository.
+
+    Returns:
+        None
 
     Raises:
-        TODO
+        ValueError:
+            - The provided path is not a Git repository.
+        RuntimeError:
+            - Failed to obtain submodule status.
+            - Failed to initialize submodules.
     """
     repo = Path(expandvars(str(repo_path))).expanduser().resolve()
 
     if not (repo / ".git").exists():
         raise ValueError(f"{repo} is not a git repository")
 
-    def run_git(args):
+    def run_git(args: list[str]):
         return subprocess.run(
             ["git"] + args,
             cwd=str(repo),
@@ -30,60 +42,42 @@ def init_submodules(repo_path: Path | str):
             text=True,
         )
 
-    # 检查 submodule 状态
+    # 查看 submodule 状态
     status = run_git(["submodule", "status", "--recursive"])
     if status.returncode != 0:
-        print()
-        printr(f"No submodules or failed to check: {status.stderr.strip()}", "ERROR")
-        return
+        raise RuntimeError(f"Failed to check submodule status: {status.stderr.strip()}")
 
-    # 判断是否有未初始化/未同步的 submodule
+    #  判断是否存在未初始化或未同步的 submodule
     needs_init = any(
         line.strip().startswith(("-", "+")) for line in status.stdout.splitlines()
     )
 
     if not needs_init:
-        return
+        return  # 所有 submodule 均已初始化
 
-    # 2. 执行初始化
+    # 初始化 submodule
     printg(f"Initializing submodules for {repo}", "SUBMODULE")
 
     result = run_git(["submodule", "update", "--init", "--recursive"])
-    if result.returncode == 0:
-        printg(f"Submodules initialized for {repo}", "SUBMODULE")
-    else:
-        printr(f"Failed to init submodules for {repo}", "ERROR")
-        printr(result.stderr)
-
-
-def update_ln39():
-    """
-    Update all git submodules to their latest remote commits.
-    Equivalent to: git submodule update --remote --merge
-
-    Raises:
-        subprocess.CalledProcessError: If the git command fails.
-    """
-    try:
-        subprocess.run(
-            ["git", "submodule", "update", "--remote", "--rebase"], check=True
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"Failed to initialize submodules for {repo}: {result.stderr}"
         )
-        printg("All submodules updated to latest remote.", "SUBMODULE")
-    except subprocess.CalledProcessError as e:
-        printr(f"Failed to update submodules: {e}", "ERROR")
+
+    printg(f"Submodules initialized for {repo}", "SUBMODULE")
 
 
 def clone_repo(
-    repo_url: str,
-    target_dir: Path | str,
-    depth: int = 1,
+    repo_url,
+    target_dir,
+    depth=1,
 ):
     """
     Clone a git repository to a target directory.
 
     Args:
         repo_url (str): Git repository URL.
-        target_dir (str): Path to clone into.
+        target_dir (Path | str): Path to clone into.
         depth (int): Shallow clone depth. Default is 1.
 
     Raises:
@@ -105,15 +99,15 @@ def clone_repo(
         raise RuntimeError(f"Git clone failed: {e}")
 
 
-def pull_repo(repo_path: Path | str):
+def pull_repo(repo_path):
     """
     Pull the latest changes in the specified Git repository.
 
-    Parameters:
-    - repo_path: str. Path to the local Git repository.
+    Args:
+        repo_path (Path | str): Path to the local Git repository.
 
     Raises:
-    - RuntimeError if the pull operation fails.
+        RuntimeError if the pull operation fails.
     """
     repo_path = Path(expandvars(str(repo_path))).expanduser().resolve()
     if not (repo_path / ".git").exists():
@@ -131,3 +125,20 @@ def pull_repo(repo_path: Path | str):
     except subprocess.CalledProcessError as e:
         printr(f"{e.stderr.strip()}", "ERROR")
         raise RuntimeError("Git pull failed") from e
+
+
+def update_ln39():
+    """
+    Update all git submodules to their latest remote commits.
+    Equivalent to: git submodule update --remote --merge
+
+    Raises:
+        subprocess.CalledProcessError: If the git command fails.
+    """
+    try:
+        subprocess.run(
+            ["git", "submodule", "update", "--remote", "--rebase"], check=True
+        )
+        printg("All submodules updated to latest remote.", "SUBMODULE")
+    except subprocess.CalledProcessError as e:
+        printr(f"Failed to update submodules: {e}", "ERROR")

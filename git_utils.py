@@ -38,7 +38,6 @@ def init_submodules(repo_path: Path):
     )
 
     if not needs_init:
-        printg(f"Already initialized for {repo}", "SUBMODULE")
         return
 
     # 2. 执行初始化

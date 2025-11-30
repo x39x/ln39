@@ -11,7 +11,7 @@ from .file_utils import backup
 
 
 def init_submodules(repo_path: Path):
-    repo = repo_path.Path.resolve()
+    repo = repo_path.resolve()
 
     if not (repo / ".git").exists():
         raise ValueError(f"{repo} is not a git repository")

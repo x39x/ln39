@@ -1,7 +1,6 @@
 import inspect
 from pathlib import Path
 from os.path import (
-    expanduser,
     expandvars,
 )
 
@@ -18,14 +17,14 @@ class M:
         before_ln=None,
         after_ln=None,
     ):
-        # 获取 dotfile 绝对路径
+        # 获取 dotfile dir 绝对路径
         caller_frame = inspect.stack()[1]
         caller_abs_path = Path(caller_frame.filename).resolve().parent
-        destination = Path(expandvars(dest)).expanduser().absolute()
 
         self.basedir = caller_abs_path
-        self.source = Path(expandvars(expanduser(src)))
-        self.destination = destination
+        # Relative path
+        self.relative_source = Path(expandvars(src)).expanduser()
+        self.destination = Path(expandvars(dest)).expanduser().absolute()
 
         self.enabled = enabled
         self.before_ln = before_ln
@@ -33,11 +32,11 @@ class M:
 
     # 配置文件源目录绝对路径
     @property
-    def source_abs(self) -> Path:
-        abs_path = self.source
+    def source(self) -> Path:
+        abs_path = self.relative_source
         if not abs_path.is_absolute():
             abs_path = self.basedir / abs_path
-        return abs_path.resolve()
+        return abs_path.absolute()
 
     # 检查目标路径是否有软链接或其他情况
     def _check_symlink(self) -> bool:
@@ -51,8 +50,8 @@ class M:
             else:
                 current_target_abs = Path(dest).readlink().resolve()
                 # 检查是否为正确的软链接
-                if current_target_abs == self.source_abs:
-                    printg(f"{self.source_abs} --> {dest}", "LINKED")
+                if current_target_abs == self.source:
+                    printg(f"{self.source} --> {dest}", "LINKED")
                     should_link = False
                 else:
                     printy(
@@ -73,7 +72,7 @@ class M:
         if not dest_dir.exists():
             dest_dir.mkdir(parents=True, exist_ok=True)
             printr(dest_dir, "MKDIR")
-        src = self.source_abs
+        src = self.source
         # 确保配置文件存在
         if not src.exists():
             printy(f"config file {src} does not exist", "WARN")
@@ -81,11 +80,11 @@ class M:
         return self._check_symlink()
 
     def ln(self):
-        src = self.source_abs
+        src = self.source
         dst = self.destination
         dst.symlink_to(src, target_is_directory=src.is_dir())
 
         printg(
-            f"{str(self.source_abs).ljust(25)} --> {self.destination}",
+            f"{str(self.source).ljust(25)} --> {self.destination}",
             "SUCCESSFUL",
         )

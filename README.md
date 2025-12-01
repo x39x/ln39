@@ -133,11 +133,6 @@ if utils.get_os_name() == "Linux":
 utils.ln(default)
 ```
 
-```python
-from ln39 import M, utils
-
-```
-
 - **`after_ln`**
   在创建 symlink **之后**执行的函数（可选）。
   同上

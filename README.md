@@ -86,18 +86,27 @@ M(src, dest, enabled=True, before_ln=None, after_ln=None)
 
 ### 参数
 
-- **`src`**
-  dotfiles 仓库中的文件路径（相对当前定义 `M()` 的文件所在目录）
+- **`src`** dotfiles 仓库中的文件路径
 
-- **`dest`**
-  系统中的目标路径（将被创建 symlink 的位置）
+    相对当前定义 `M()` 的文件所在目录
+
+- **`dest`** 系统中的目标路径
+  将被创建 symlink 的位置
 
 - **`enabled`**（可选，默认 `True`）
-  是否启用这条映射
 
-- **`before_ln`**
-  在创建 symlink **之前**执行的函数（可选）。
-  会收到一个对象参数：`opts.src`、`opts.dest`、`opts.basedir`，分别对应源文件路径，目标路径，ln39所在目录
+    是否启用这条映射
+
+* **`before_ln`**：在创建 symlink *之前*执行的可选回调函数（可选）
+
+    回调函数会收到一个参数对象 `opts`，包含：
+    - `opts.src`：源文件的**绝对**路径
+    - `opts.dest`：目标 symlink 的**绝对**路径
+    - `opts.basedir`：`config.py` 所在目录的**绝对**路径
+
+- **`after_ln`** 在创建 symlink **之后**执行的函数（可选）。
+
+    同上
 
 使用
 
@@ -132,10 +141,6 @@ if utils.get_os_name() == "Linux":
 
 utils.ln(default)
 ```
-
-- **`after_ln`**
-  在创建 symlink **之后**执行的函数（可选）。
-  同上
 
 ## Example
 

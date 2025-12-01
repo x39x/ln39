@@ -36,7 +36,6 @@ from ln39 import M, utils
 
 default = [
     M("git", "~/.config/git"),
-    M("ghostty", "~/.config/ghostty"),
     M("bat", "~/.config/bat/config"),
     M(
         "vscode/settings.json",
@@ -77,18 +76,80 @@ python config.py
 
 你的配置将自动链接到系统对应路径。
 
+## `M` 对象
+
+用于声明一条 dotfile 映射：把仓库中的文件链接到系统中的实际路径。
+
+```python
+M(src, dest, enabled=True, before_ln=None, after_ln=None)
+```
+
+### 参数
+
+- **`src`**
+  dotfiles 仓库中的文件路径（相对当前定义 `M()` 的文件所在目录）。支持 `~` 和环境变量。
+
+- **`dest`**
+  系统中的目标路径（将被创建 symlink 的位置）。支持 `~` 和环境变量。
+
+- **`enabled`**（可选，默认 `True`）
+  是否启用这条映射
+
+```python
+from ln39 import M, utils
+
+def is_arch():
+    result = utils.run(["cat", "/etc/*-release"])
+    if "arch" in result.stdout.lower():
+        return True
+    else:
+        return False
+
+linux = [
+    M("xkb", "~/.config/xkb"),
+    M("sway", "~/.config/sway"),
+    M("arch.config","~/.config/archconfig",enabled=is_arch()),
+]
+
+if utils.get_os_name() == "Linux":
+    utils.ln(linux)
+```
+
+- **`before_ln`**
+  在创建 symlink **之前**执行的函数（可选）。
+  会收到一个对象参数：`opts.src`、`opts.dest`、`opts.basedir`，分别对应源文件路径，目标路径，ln39所在目录
+
+```python
+from ln39 import M, utils
+
+def print_info(opts):
+    print("opts.src:", opts.src)
+    print("opts.dest:", opts.dest)
+    print("opts.basedir:", opts.basedir)
+
+default = [
+    M("git", "~/.config/git"),
+    M("nvim", "~/.config/nvim",before_ln=print_info),
+]
+
+utils.ln(default)
+```
+
+执行：
+
+```sh
+python config.py
+```
+
+- **`after_ln`**
+  在创建 symlink **之后**执行的函数（可选）。
+  同上
+
 ## Example
 
-如果你愿意分享自己的 ln39 配置，可以在 issue 或 PR 中添加
+如果你愿意分享自己的 dotfiles 配置，可以在 issue 或 PR 中添加
 
 - [https://github.com/x39x/dotfiles](https://github.com/x39x/dotfiles)
-
-## M 对象
-
-`M(source, dest)` 用于描述一个映射关系：
-
-- `src`: 配置文件在dotfiles 仓库中的路径
-- `dest`: 系统中的实际路径（可用 `~`）
 
 ## utils
 

@@ -5,13 +5,13 @@
 ## 特性
 
 - **零依赖**
-  无需额外安装工具。只需 Python 与 Git（大多数系统已预装）。
+  无需额外安装工具。只需 Python 与 Git（大多数系统已预装）
 
 - **配置灵活**
   直接使用 Python 作为配置文件，轻松处理不同场景
 
 - **跨平台**
-  支持 Linux、macOS、Windows、BSD。
+  支持 Linux、macOS、Windows、BSD
 
 - **安全操作**
   需要移动文件时自动备份到指定目录(~/ln39.bak/)，不会进行删除操作造成文件丢失
@@ -74,11 +74,11 @@ utils.ln(default)
 python config.py
 ```
 
-你的配置将自动链接到系统对应路径。
+你的配置将自动链接到系统对应路径
 
 ## `M` 对象
 
-用于声明一条 dotfile 映射：把仓库中的文件链接到系统中的实际路径。
+用于声明一条 dotfile 映射：把仓库中的文件链接到系统中的实际路径
 
 ```python
 M(src, dest, enabled=True, before_ln=None, after_ln=None)
@@ -87,13 +87,19 @@ M(src, dest, enabled=True, before_ln=None, after_ln=None)
 ### 参数
 
 - **`src`**
-  dotfiles 仓库中的文件路径（相对当前定义 `M()` 的文件所在目录）。支持 `~` 和环境变量。
+  dotfiles 仓库中的文件路径（相对当前定义 `M()` 的文件所在目录）
 
 - **`dest`**
-  系统中的目标路径（将被创建 symlink 的位置）。支持 `~` 和环境变量。
+  系统中的目标路径（将被创建 symlink 的位置）
 
 - **`enabled`**（可选，默认 `True`）
   是否启用这条映射
+
+- **`before_ln`**
+  在创建 symlink **之前**执行的函数（可选）。
+  会收到一个对象参数：`opts.src`、`opts.dest`、`opts.basedir`，分别对应源文件路径，目标路径，ln39所在目录
+
+使用
 
 ```python
 from ln39 import M, utils
@@ -108,19 +114,8 @@ def is_arch():
 linux = [
     M("xkb", "~/.config/xkb"),
     M("sway", "~/.config/sway"),
-    M("arch.config","~/.config/archconfig",enabled=is_arch()),
+    M("arch.config","~/.config/archconfig",enabled=is_arch()), # 仅在 arch 上创建 symlink
 ]
-
-if utils.get_os_name() == "Linux":
-    utils.ln(linux)
-```
-
-- **`before_ln`**
-  在创建 symlink **之前**执行的函数（可选）。
-  会收到一个对象参数：`opts.src`、`opts.dest`、`opts.basedir`，分别对应源文件路径，目标路径，ln39所在目录
-
-```python
-from ln39 import M, utils
 
 def print_info(opts):
     print("opts.src:", opts.src)
@@ -129,16 +124,18 @@ def print_info(opts):
 
 default = [
     M("git", "~/.config/git"),
-    M("nvim", "~/.config/nvim",before_ln=print_info),
+    M("nvim", "~/.config/nvim",before_ln=print_info), # 会在 ln 之前执行
 ]
+
+if utils.get_os_name() == "Linux":
+    utils.ln(linux)
 
 utils.ln(default)
 ```
 
-执行：
+```python
+from ln39 import M, utils
 
-```sh
-python config.py
 ```
 
 - **`after_ln`**

@@ -98,8 +98,8 @@ ln39 提供一组简单但实用的工具函数
 
 ```python
 utils.get_env("SHELL") # 返回环境变量的值
-utils.env_exists("SHELL") # True
-utils.env_equals("SHELL", "/bin/zsh") # True
+utils.env_exists("SHELL") # 环境变量是否存在
+utils.env_equals("SHELL", "/bin/zsh") # 判断环境变量的值
 ```
 
 ### 系统名称
@@ -124,7 +124,8 @@ utils.path_for(
 ### 执行命令
 
 ```python
-utils.run(["ls", "-a"], cwd="~/Desktop")
+result=utils.run(["ls", "-a"], cwd="~/Desktop")
+print(result.stdout)
 ```
 
 对 `subprocess.run` 的包装，默认捕获输出。
